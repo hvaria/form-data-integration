@@ -1,13 +1,12 @@
 import { EndpointName } from "../models/endpoint";
 
 export enum ErrorCategory {
-    VALIDATION = "VALIDATION",
-    TRANSFORMATION = "TRANSFORMATION",
-    API = "API",
-    CONFIGURATION = "CONFIGURATION",
-    DATABASE = "DATABASE",
-    NETWORK = "NETWORK",
-    UNKNOWN = "UNKNOWN"
+    VALIDATION = 'validation',
+    API = 'api',
+    CONFIGURATION = 'configuration',
+    PROCESSING = 'processing',
+    TRANSFORMATION = 'transformation',
+    UNKNOWN = 'unknown'
 }
 
 export enum ErrorSeverity {
@@ -18,41 +17,34 @@ export enum ErrorSeverity {
 }
 
 export interface ErrorContext {
-    customerId?: string;
-    endpoint?: string;
-    retryCount?: number;
-    payload?: any;
-    message?: string;
+    customerId: string;
     category?: ErrorCategory;
-    severity?: ErrorSeverity;
-    httpStatus?: number;
+    endpoint?: string;
+    message?: string;
+    timestamp?: string;
+    [key: string]: any;
 }
 
 export class ProcessingError extends Error {
-    public severity: ErrorSeverity;
-    public category: ErrorCategory;
+    public context: ErrorContext;
 
-    constructor(
-        public originalError: Error,
-        public context: ErrorContext = {}
-    ) {
-        super(context.message || originalError.message);
+    constructor(error: Error | string, context: ErrorContext) {
+        super(typeof error === 'string' ? error : error.message);
         this.name = 'ProcessingError';
-        this.severity = context.severity || ErrorSeverity.MEDIUM;
-        this.category = context.category || ErrorCategory.UNKNOWN;
+        this.stack = typeof error === 'string' ? undefined : error.stack;
+        this.context = {
+            ...context,
+            timestamp: new Date().toISOString(),
+            category: context.category || ErrorCategory.UNKNOWN
+        };
     }
 
     toJSON() {
         return {
             name: this.name,
             message: this.message,
-            severity: this.severity,
-            category: this.category,
-            context: this.context,
-            originalError: {
-                message: this.originalError.message,
-                stack: this.originalError.stack
-            }
+            stack: this.stack,
+            context: this.context
         };
     }
 }
@@ -150,27 +142,33 @@ export function errorHandler(error: unknown): never {
 }
 
 // Helper functions for creating specific error types
-export function createValidationError(error: Error, context: ErrorContext = {}): ProcessingError {
+export function createValidationError(error: Error | string, context: Partial<ErrorContext> = {}): ProcessingError {
     return new ProcessingError(error, {
-        ...context,
-        category: ErrorCategory.VALIDATION,
-        severity: ErrorSeverity.MEDIUM
+        customerId: context.customerId || 'UNKNOWN',
+        context: {
+            ...context.context,
+            category: ErrorCategory.VALIDATION
+        }
     });
 }
 
-export function createApiError(error: Error, context: ErrorContext = {}): ProcessingError {
+export function createApiError(error: Error | string, context: Partial<ErrorContext> = {}): ProcessingError {
     return new ProcessingError(error, {
-        ...context,
-        category: ErrorCategory.API,
-        severity: ErrorSeverity.HIGH
+        customerId: context.customerId || 'UNKNOWN',
+        context: {
+            ...context.context,
+            category: ErrorCategory.API
+        }
     });
 }
 
-export function createConfigurationError(error: Error, context: ErrorContext = {}): ProcessingError {
+export function createConfigurationError(error: Error | string, context: Partial<ErrorContext> = {}): ProcessingError {
     return new ProcessingError(error, {
-        ...context,
-        category: ErrorCategory.CONFIGURATION,
-        severity: ErrorSeverity.CRITICAL
+        customerId: context.customerId || 'UNKNOWN',
+        context: {
+            ...context.context,
+            category: ErrorCategory.CONFIGURATION
+        }
     });
 }
 

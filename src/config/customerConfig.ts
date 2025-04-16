@@ -1,5 +1,6 @@
 import { EndpointName, EndpointConfig } from '../models/endpoint';
 import { FormData } from '../models/formData';
+import { CustomerConfig } from '../types';
 
 export interface FieldOverride {
     value?: any;
@@ -18,127 +19,66 @@ export interface EndpointSpecificConfig {
     fieldOverrides?: Partial<Record<keyof FormData, FieldOverride>>;
     additionalFields?: Record<string, any>;
     validationRules?: Partial<Record<keyof FormData, (value: any) => boolean | string>>;
+    fieldValidation?: {
+        pattern: RegExp;
+        errorMessage: string;
+    }[];
 }
 
 export interface CustomerConfig {
     customerId: string;
-    enabledEndpoints: EndpointName[];
-    endpointSpecificConfig: Partial<Record<EndpointName, EndpointSpecificConfig>>;
+    enabledEndpoints: string[];
+    endpointSpecificConfig: Record<string, EndpointSpecificConfig>;
     defaultFieldOverrides?: Partial<Record<keyof FormData, FieldOverride>>;
     validationRules?: Partial<Record<keyof FormData, (value: any) => boolean | string>>;
+    webhookUrl: string;
 }
+
+// Simple regex patterns for validation
+const PATTERNS = {
+    EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    PHONE: /^\d{3}-\d{3}-\d{4}$/,
+    DATE: /^\d{4}-\d{2}-\d{2}$/,
+    NAME: /^[A-Za-z\s]{2,50}$/,
+    CREDIT_SCORE: /^[3-8][0-9]{2}$/
+};
+
+// Log the patterns being used
+console.log('\n=== Validation Patterns ===');
+Object.entries(PATTERNS).forEach(([key, pattern]) => {
+    console.log(`${key}: ${pattern}`);
+});
 
 // Example customer configurations
 export const customerConfigs: Record<string, CustomerConfig> = {
-    'CUST001': {
-        customerId: 'CUST001',
-        enabledEndpoints: [
-            'CustomerProfileAPI',
-            'AddressVerificationService',
-            'CreditCheckSystem',
-            'ProductCatalogService',
-            'DocumentStorageService',
-            'WebhookEndpoint'
-        ],
+    'CUST12345': {
+        customerId: 'CUST12345',
+        enabledEndpoints: ['CustomerProfileAPI', 'CreditCheckSystem'],
+        webhookUrl: 'https://webhook.site/41ccf42f-9b0d-49b6-b3f4-59299a76d32b',
         endpointSpecificConfig: {
             CustomerProfileAPI: {
+                name: 'CustomerProfileAPI',
                 enabled: true,
-                fieldMappings: {
-                    personalName: ['firstName', 'lastName']
-                },
-                fieldOverrides: {
-                    dateOfBirth: {
-                        validation: (value: string) => {
-                            const age = new Date().getFullYear() - new Date(value).getFullYear();
-                            return age >= 18 ? true : 'Customer must be at least 18 years old';
-                        }
+                fieldValidation: [
+                    {
+                        pattern: PATTERNS.NAME,
+                        errorMessage: 'Invalid name format'
+                    },
+                    {
+                        pattern: PATTERNS.EMAIL,
+                        errorMessage: 'Invalid email format'
                     }
-                }
+                ]
             },
             CreditCheckSystem: {
+                name: 'CreditCheckSystem',
                 enabled: true,
-                fieldOverrides: {
-                    creditScore: {
-                        validation: (value: number) => {
-                            return value >= 300 && value <= 850 ? true : 'Credit score must be between 300 and 850';
-                        }
+                fieldValidation: [
+                    {
+                        pattern: PATTERNS.CREDIT_SCORE,
+                        errorMessage: 'Credit score must be between 300 and 850'
                     }
-                }
-            },
-            ProductCatalogService: {
-                enabled: true,
-                additionalFields: {
-                    market: 'US',
-                    channel: 'DIRECT'
-                }
-            },
-            DocumentStorageService: {
-                enabled: true,
-                additionalFields: {
-                    storageType: 'SECURE',
-                    retention: 'STANDARD'
-                }
-            },
-            WebhookEndpoint: {
-                enabled: true,
-                additionalFields: {
-                    webhookUrl: 'https://webhook.site/4a2dd565-c5dc-4f3b-a423-cad62bcfd47f',
-                    secret: 'your-webhook-secret'
-                }
-            }
-        },
-        defaultFieldOverrides: {
-            consentGiven: {
-                required: true,
-                validation: (value: boolean) => value === true ? true : 'Consent must be given'
-            }
-        }
-    },
-    'CUST002': {
-        customerId: 'CUST002',
-        enabledEndpoints: [
-            'ProductCatalogService',
-            'RequestProcessingQueue',
-            'CommunicationPreferencesAPI',
-            'DocumentStorageService',
-            'WebhookEndpoint'
-        ],
-        endpointSpecificConfig: {
-            ProductCatalogService: {
-                enabled: true,
-                fieldOverrides: {
-                    productCategory: {
-                        dependsOn: {
-                            field: 'incomeRange',
-                            condition: (value: string) => value !== '$0-$25k'
-                        }
-                    }
-                },
-                additionalFields: {
-                    market: 'EU',
-                    channel: 'PARTNER'
-                }
-            },
-            CommunicationPreferencesAPI: {
-                enabled: true,
-                additionalFields: {
-                    language: 'en',
-                    timezone: 'UTC'
-                }
-            },
-            DocumentStorageService: {
-                enabled: true,
-                additionalFields: {
-                    storageType: 'STANDARD',
-                    retention: 'EXTENDED'
-                }
-            },
-            WebhookEndpoint: {
-                enabled: true,
-                additionalFields: {
-                    webhookUrl: 'https://webhook.site/67986567-5224-4759-9943-d821b544d068',
-                    secret: 'your-webhook-secret'
-                }
+                ]
             }
         }
     }

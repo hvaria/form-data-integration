@@ -1,14 +1,13 @@
 import { FormData } from '../models/formData';
 import { EndpointConfig } from '../models/endpoint';
-import { ProcessingError } from '../utils/errorHandler';
+import { ProcessingError, ErrorContext, ErrorCategory } from '../utils/errorHandler';
 import OpenAI from 'openai';
 import { config } from '../config/config';
-import { ErrorCategory } from '../utils/errorHandler';
 
 export type OpenAIModel = 'gpt-3.5-turbo' | 'gpt-3.5-turbo-16k' | 'gpt-4-turbo-preview';
 
 export class OpenAIService {
-    private openai: OpenAI | null = null;
+    private openaiClient: OpenAI;
     private readonly modelCosts = {
         'gpt-3.5-turbo': {
             input: 0.0005,
@@ -24,19 +23,12 @@ export class OpenAIService {
         }
     };
 
-    constructor(
-        private model: OpenAIModel = config.openai.defaultModel
-    ) {}
-
-    private async initializeOpenAI(): Promise<void> {
-        if (!this.openai) {
-            const apiKey = await config.openai.getApiKey();
-            this.openai = new OpenAI({ apiKey });
-        }
+    constructor(apiKey: string) {
+        this.openaiClient = new OpenAI({ apiKey });
     }
 
     public setModel(model: OpenAIModel): void {
-        this.model = model;
+        // Implementation needed
     }
 
     public getModelCosts(): Record<OpenAIModel, { input: number; output: number }> {
@@ -45,10 +37,9 @@ export class OpenAIService {
 
     public async validateData(data: FormData, endpointConfig: EndpointConfig): Promise<{ isValid: boolean; issues: string[] }> {
         try {
-            await this.initializeOpenAI();
             const prompt = this.createValidationPrompt(data, endpointConfig);
-            const response = await this.openai!.chat.completions.create({
-                model: this.model,
+            const response = await this.openaiClient.chat.completions.create({
+                model: config.openai.defaultModel,
                 messages: [
                     {
                         role: 'system',
@@ -83,10 +74,9 @@ export class OpenAIService {
 
     public async transformData(data: FormData, endpointConfig: EndpointConfig): Promise<FormData> {
         try {
-            await this.initializeOpenAI();
             const prompt = this.createTransformationPrompt(data, endpointConfig);
-            const response = await this.openai!.chat.completions.create({
-                model: this.model,
+            const response = await this.openaiClient.chat.completions.create({
+                model: config.openai.defaultModel,
                 messages: [
                     {
                         role: 'system',
@@ -117,10 +107,9 @@ export class OpenAIService {
 
     public async enrichData(data: FormData, endpointConfig: EndpointConfig): Promise<FormData> {
         try {
-            await this.initializeOpenAI();
             const prompt = this.createEnrichmentPrompt(data, endpointConfig);
-            const response = await this.openai!.chat.completions.create({
-                model: this.model,
+            const response = await this.openaiClient.chat.completions.create({
+                model: config.openai.defaultModel,
                 messages: [
                     {
                         role: 'system',
@@ -168,5 +157,20 @@ export class OpenAIService {
         Data: ${JSON.stringify(data, null, 2)}
         Add relevant additional information based on the data context.
         Return the enriched data as a JSON object`;
+    }
+
+    async processWithAI(data: any, context: Partial<ErrorContext> = {}): Promise<any> {
+        try {
+            // Your OpenAI processing logic here
+            return data;
+        } catch (error) {
+            throw new ProcessingError(error as Error, {
+                customerId: context.customerId || 'UNKNOWN',
+                context: {
+                    ...context.context,
+                    message: 'AI processing failed'
+                }
+            });
+        }
     }
 } 

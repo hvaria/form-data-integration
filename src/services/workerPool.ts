@@ -3,7 +3,7 @@ import { EndpointConfig } from '../models/endpoint';
 import { TransformationService } from './transformationService';
 import { ValidationService } from './validationService';
 import { OpenAIService, OpenAIModel } from './openAIService';
-import { ProcessingError } from '../utils/errorHandler';
+import { ProcessingError, ErrorContext } from '../utils/errorHandler';
 
 interface Worker {
     id: number;
@@ -127,5 +127,22 @@ export class WorkerPool {
             busy: this.getBusyWorkers(),
             total: this.maxWorkers
         };
+    }
+
+    async processTask(task: any, endpointConfig: any): Promise<void> {
+        try {
+            if (!this.workers.length) {
+                throw new ProcessingError('No available workers', {
+                    customerId: task.customerId,
+                    endpoint: endpointConfig.name
+                });
+            }
+            // Process task implementation
+        } catch (error) {
+            throw new ProcessingError(error as Error, {
+                customerId: task.customerId,
+                endpoint: endpointConfig.name
+            });
+        }
     }
 } 

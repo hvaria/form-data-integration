@@ -51,14 +51,15 @@ export class QueueService {
         try {
             await this.processItem(item);
         } catch (error) {
-            if (error instanceof ProcessingError && error.retryCount < this.MAX_RETRIES) {
+            const processError = error as Error;
+            if (error instanceof ProcessingError && (error as any).retryCount < this.MAX_RETRIES) {
                 // Re-queue with higher priority and retry count
                 setTimeout(() => {
                     this.enqueue(item.data, item.endpointConfig, item.priority + 1);
                 }, this.RETRY_DELAY);
             } else {
-                // Log error and continue processing
-                console.error(`Failed to process item: ${error.message}`);
+                console.error(`Failed to process item: ${processError.message}`);
+                throw error;
             }
         } finally {
             this.processing.delete(processingId);
@@ -91,5 +92,9 @@ export class QueueService {
             queueLength: this.queue.length,
             processingCount: this.processing.size
         };
+    }
+
+    async getNextItem(): Promise<QueueItem | undefined> {
+        return this.queue.shift();
     }
 } 

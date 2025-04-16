@@ -2,7 +2,7 @@ import { FormData } from '../models/formData';
 import { EndpointConfig } from '../models/endpoint';
 import { QueueService } from './queueService';
 import { WorkerPool } from './workerPool';
-import { ProcessingError, OpenAIModel } from '../utils/errorHandler';
+import { ProcessingError, ErrorCategory } from '../utils/errorHandler';
 
 export class ParallelProcessingService {
     private queueService: QueueService;
@@ -56,14 +56,11 @@ export class ParallelProcessingService {
                 }
             }
         } catch (error) {
-            throw new ProcessingError(
-                'Parallel processing error',
-                {
-                    customerId: data.customerID,
-                    endpoint: endpointConfig.name,
-                    message: error instanceof Error ? error.message : 'Unknown error'
-                }
-            );
+            throw new ProcessingError(error as Error, {
+                customerId: data.customerID,
+                endpoint: endpointConfig.name,
+                category: ErrorCategory.PROCESSING
+            });
         }
     }
 
@@ -75,5 +72,17 @@ export class ParallelProcessingService {
             queue: this.queueService.getQueueStatus(),
             workers: this.workerPool.getWorkerStatus()
         };
+    }
+
+    async processInParallel(tasks: any[], endpointConfig: any): Promise<void> {
+        try {
+            // Your parallel processing logic
+        } catch (error) {
+            throw new ProcessingError(error as Error, {
+                customerId: 'BATCH',
+                endpoint: endpointConfig.name,
+                category: ErrorCategory.PROCESSING
+            });
+        }
     }
 } 

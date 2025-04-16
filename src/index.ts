@@ -1,14 +1,12 @@
-import { DataProcessor } from "./services/dataProcessor";
-import { errorHandler } from "./utils/errorHandler";
-import { FormData } from "./models/formData";
+import { DataProcessor } from './services/dataProcessor';
+import { FormData } from './types';
 
-// Example form data - in a real app this would come from API/event
 const exampleFormData: FormData = {
     personalName: "John Doe",
     customerID: "CUST12345",
     emailAddress: "john.doe@example.com",
     phoneNumber: "555-123-4567",
-    dateOfBirth: "01/15/1980",
+    dateOfBirth: "1980-01-15",
     currentAddress: "123 Main St, City, State 12345",
     mailingAddress: "123 Main St, City, State 12345",
     employmentStatus: "Employed",
@@ -33,18 +31,18 @@ const exampleFormData: FormData = {
 
 async function main() {
     const processor = new DataProcessor();
-
+    
     try {
         console.log("Starting form data processing...");
         await processor.processFormData(exampleFormData, exampleFormData.customerID);
         console.log("Processing completed successfully");
     } catch (error) {
-        errorHandler(error);
+        console.error("Processing failed:", error);
+        process.exit(1);
     }
 }
 
-// Start the processor
-main().catch(errorHandler);
+main();
 
 // For testing purposes
 export async function processFormData(formData: FormData, customerId: string) {
