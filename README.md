@@ -218,6 +218,10 @@ A scalable solution for processing, validating, and transforming form data with 
   - No health checks
   - No autoscaling support
   - No traffic routing strategy
+ 
+#### KEY NOTE
+- The current error is occurring because of a circular dependency issue and incorrect initialization order. The main problem is that when the customer configuration file tries to use the transformation functions, they haven't been properly initialized yet because of how the files are importing each other. To fix this, we need to move all the transformation logic and patterns into a separate constants file that both the configuration and service files can import independently. This breaks the circular dependency and ensures all transformations are available when needed. The key is to have a clear, hierarchical structure where shared constants and transformations are defined first, then used by other parts of the system.
+(Due to lack of timE i could'nt fix it )
 
 
 ## Future Enhancements
