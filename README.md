@@ -4,32 +4,35 @@ A scalable solution for processing, validating, and transforming form data with 
 
 ## Architecture Overview
 
-```mermaid
-graph TD
-    A[Form Data] --> B[Validation Service<br>(src/services/validationService.ts)]
-    B --> C[Transformation Service<br>(src/services/transformationService.ts)]
-    C --> D[Queue Service<br>(src/services/queueService.ts)]
-    D --> E[Worker Pool<br>(src/services/workerPool.ts)]
-    E --> F[OpenAI Service<br>(src/services/openAIService.ts)]
-    F --> G[Endpoint Service<br>(src/services/endpointService.ts)]
-    G --> H[External APIs]
+![a65bdbb9-aa37-4944-a3b4-dd1e56cc02c2](https://github.com/user-attachments/assets/78c095f3-8038-4d6d-8d44-4f915ddcac3c)
 
-    I[Error Handler<br>(src/utils/errorHandler.ts)] -->|Error Handling| B
-    I -->|Error Handling| C
-    I -->|Error Handling| D
-    I -->|Error Handling| E
-    I -->|Error Handling| F
-    I -->|Error Handling| G
-
-    J[Config<br>(src/config/)] -->|Configuration| B
-    J -->|Configuration| C
-    J -->|Configuration| D
-    J -->|Configuration| E
-    J -->|Configuration| F
-    J -->|Configuration| G
-```
 
 ## Implementation Rationale
+1. **Modular Architecture**
+Each service is isolated by function.
+
+Enhances scalability, maintainability, and testability.
+
+2. **Queue-Driven Workflow**
+Decouples services for efficient async processing.
+
+Enables retries and load management under high traffic.
+
+3. **AI Integration**
+Leverages OpenAI for intelligent validation.
+
+Supports fallback handling and cost-aware model selection.
+
+4. **Centralized Error Handling**
+Uniform error tracking across services.
+
+Simplifies debugging and ensures graceful failure recovery.
+
+5. **Environment-Based Configuration**
+Centralized config management for all services.
+
+Simplifies deployment and scaling across environments.
+
 
 ### Core Design Decisions
 
