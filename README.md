@@ -1,159 +1,155 @@
 # Form Data Integration System
 
-A robust system for processing, validating, and transforming form data with AI-powered enhancements.
+A scalable solution for processing, validating, and transforming form data with AI-powered enhancements.
 
-## Overview
+## Architecture Overview
 
-This system provides a scalable solution for handling form data processing with the following key features:
-- Parallel processing of form submissions
-- AI-powered data validation and transformation
-- Secure API key management
-- Comprehensive error handling
-- Configurable endpoint integrations
+```mermaid
+graph TD
+    A[Form Data] --> B[Validation Service<br>(src/services/validationService.ts)]
+    B --> C[Transformation Service<br>(src/services/transformationService.ts)]
+    C --> D[Queue Service<br>(src/services/queueService.ts)]
+    D --> E[Worker Pool<br>(src/services/workerPool.ts)]
+    E --> F[OpenAI Service<br>(src/services/openAIService.ts)]
+    F --> G[Endpoint Service<br>(src/services/endpointService.ts)]
+    G --> H[External APIs]
 
-## Architecture
+    I[Error Handler<br>(src/utils/errorHandler.ts)] -->|Error Handling| B
+    I -->|Error Handling| C
+    I -->|Error Handling| D
+    I -->|Error Handling| E
+    I -->|Error Handling| F
+    I -->|Error Handling| G
 
-### Core Components
+    J[Config<br>(src/config/)] -->|Configuration| B
+    J -->|Configuration| C
+    J -->|Configuration| D
+    J -->|Configuration| E
+    J -->|Configuration| F
+    J -->|Configuration| G
+```
 
-1. **Form Processing Pipeline**
-   - Parallel processing using worker pools
-   - Queue-based task management
-   - Retry mechanisms for failed operations
+## Implementation Rationale
 
-2. **AI Integration Layer**
-   - OpenAI-powered data validation
-   - Smart data transformation
-   - Context-aware data enrichment
+### Core Design Decisions
 
-3. **Security Layer**
-   - Secure API key management
-   - Environment-based configuration
-   - Error handling with detailed context
+1. **Modular Service Architecture**
+   - Each service handles a specific responsibility
+   - Enables independent scaling and maintenance
+   - Facilitates testing and debugging
 
-4. **Integration Layer**
-   - Configurable endpoint connections
+2. **Queue-Based Processing**
+   - Handles high-volume data processing
+   - Provides retry mechanisms for failed operations
+   - Enables parallel processing without overwhelming resources
+
+3. **AI Integration Strategy**
+   - Uses OpenAI for complex data validation
+   - Implements cost-effective model selection
+   - Provides fallback mechanisms for API failures
+
+4. **Error Handling Approach**
+   - Structured error classification
+   - Detailed error context for debugging
+   - Graceful degradation under failure
+
+## Technical Implementation
+
+### Key Components
+
+1. **Validation Service** (`src/services/validationService.ts`)
+   - Schema-based validation
+   - Custom validation rules
+   - Field-level error tracking
+
+2. **Transformation Service** (`src/services/transformationService.ts`)
    - Standardized data formats
-   - Flexible transformation rules
+   - Endpoint-specific transformations
+   - Data enrichment capabilities
 
-### Data Flow
+3. **Queue Service** (`src/services/queueService.ts`)
+   - FIFO processing
+   - Configurable retry policies
+   - Error recovery mechanisms
 
-1. Form data submission
-2. Initial validation
-3. AI-powered processing
-4. Endpoint-specific transformation
-5. Secure data transmission
-6. Response handling
+4. **Worker Pool** (`src/services/workerPool.ts`)
+   - Dynamic worker allocation
+   - Resource optimization
+   - Parallel processing
 
-## Getting Started
+5. **OpenAI Service** (`src/services/openAIService.ts`)
+   - Model selection based on cost/performance
+   - Token optimization
+   - Response caching
 
-### Prerequisites
+## Setup and Execution
 
-- Node.js (v14 or higher)
-- npm or yarn
-- OpenAI API key
+1. **Prerequisites**
+   ```bash
+   Node.js >= 14
+   npm >= 6
+   OpenAI API key
+   ```
 
-### Installation
+2. **Installation**
+   ```bash
+   git clone https://github.com/hvaria/form-data-integration.git
+   cd form-data-integration
+   npm install
+   cp .env.example .env
+   # Add OpenAI API key to .env
+   ```
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd form-data-integration
-```
+3. **Running Tests**
+   ```bash
+   npm test
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+4. **Starting Services**
+   ```bash
+   npm run dev
+   ```
 
-3. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your OpenAI API key
-```
+## Current Limitations
 
-4. Start the development server:
-```bash
-npm run dev
-```
+1. **Performance Constraints**
+   - OpenAI API latency (200-500ms per request)
+   - Queue processing bottleneck under high load
+   - Memory usage spikes with large datasets
 
-### Configuration
-
-The system can be configured through:
-- Environment variables
-- Configuration files
-- Endpoint-specific settings
-
-## Assumptions
-
-1. Form data follows a consistent structure
-2. API endpoints are RESTful
-3. OpenAI API is available and accessible
-4. Processing time is acceptable for near-real-time operations
-5. Data privacy requirements are met through existing security measures
-
-## Limitations
-
-1. **Performance**
-   - AI processing adds latency
-   - Large datasets may require optimization
-   - Rate limits on external APIs
-
-2. **Scalability**
-   - Worker pool size is configurable but has limits
-   - Queue size may need adjustment for high volume
-   - Memory usage with large datasets
-
-3. **Features**
-   - Limited to OpenAI's capabilities
+2. **Implementation Gaps**
+   - Limited caching strategy
    - Basic retry mechanism
-   - Simple error handling
+   - No real-time monitoring
+   - Missing distributed processing
 
-## Future Improvements
+3. **Known Issues**
+   - Race conditions in worker pool
+   - Memory leaks in long-running processes
+   - Incomplete error recovery in some scenarios
 
-1. **Performance Enhancements**
-   - Implement caching for frequent operations
-   - Add batch processing capabilities
-   - Optimize worker pool management
+## Future Enhancements
 
-2. **Feature Additions**
-   - Support for more AI providers
-   - Advanced data validation rules
-   - Custom transformation pipelines
-   - Real-time monitoring dashboard
+1. **Immediate Priorities**
+   - Implement distributed processing
+   - Add comprehensive monitoring
+   - Enhance error recovery
+   - Optimize memory usage
 
-3. **Security Improvements**
-   - Implement rate limiting
-   - Add request validation
-   - Enhanced error tracking
-   - Audit logging
-
-4. **Scalability**
-   - Distributed processing
-   - Load balancing
-   - Auto-scaling capabilities
-
-## Testing
-
-Run tests with:
-```bash
-npm test
-```
-
-Test coverage includes:
-- Form data validation
-- AI processing
-- Error handling
-- Endpoint integration
-- Security measures
+2. **Long-term Goals**
+   - Multi-cloud deployment
+   - Advanced caching
+   - AI model optimization
+   - Real-time analytics
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+MIT License - See LICENSE for details 
