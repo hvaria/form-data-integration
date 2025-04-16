@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/form-data-integration.git"
+    "url": "git+https://github.com/hvaria/form-data-integration.git"
   },
   "keywords": [
     "form",
@@ -28,12 +28,12 @@
     "openai",
     "typescript"
   ],
-  "author": "Your Name",
+  "author": "Himanshu Varia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yourusername/form-data-integration/issues"
+    "url": "https://github.com/hvaria/form-data-integration/issues"
   },
-  "homepage": "https://github.com/yourusername/form-data-integration#readme",
+  "homepage": "https://github.com/hvaria/form-data-integration#readme",
   "dependencies": {
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
