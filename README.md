@@ -235,7 +235,3 @@ A scalable solution for processing, validating, and transforming form data with 
    - Real-time analytics
 
 
-## License
-
-MIT License - See LICENSE for details
-
