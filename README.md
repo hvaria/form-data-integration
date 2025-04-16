@@ -113,23 +113,112 @@ Simplifies deployment and scaling across environments.
    npm run dev
    ```
 
-## Current Limitations
+# Form Data Integration System
 
-1. **Performance Constraints**
-   - OpenAI API latency (200-500ms per request)
-   - Queue processing bottleneck under high load
-   - Memory usage spikes with large datasets
+A scalable solution for processing, validating, and transforming form data with AI-powered enhancements.
 
-2. **Implementation Gaps**
-   - Limited caching strategy
-   - Basic retry mechanism
-   - No real-time monitoring
-   - Missing distributed processing
+## Technical Limitations
 
-3. **Known Issues**
-   - Race conditions in worker pool
-   - Memory leaks in long-running processes
-   - Incomplete error recovery in some scenarios
+### 1. Performance Constraints
+
+#### Synchronous Processing
+- `processFormData` uses `Promise.all` for parallel execution
+- Bottlenecks:
+  - Memory-heavy tasks not offloaded to worker threads
+  - No streaming support for large datasets
+  - Large payloads can trigger memory spikes
+
+#### Rate Limiting
+- Basic implementation via `waitForRateLimit`
+- Current constraints:
+  - No distributed rate limiting across instances
+  - Static limit: 60 requests/min per instance
+  - No adaptive logic based on system load
+
+#### Caching
+- Missing capabilities:
+  - No caching for identical requests
+  - No in-memory cache for repeated data
+  - No distributed cache support
+
+### 2. Error Handling
+
+#### Error Context
+- Defined in `ErrorContext` interface with:
+  - customerId, endpoint, retryCount
+- Lacks:
+  - Stack trace preservation
+  - Correlation IDs for tracing
+  - Chained error propagation
+
+#### Retry Mechanism
+- Basic exponential backoff with 3 retry attempts
+- Missing:
+  - Circuit breaker pattern
+  - Retry strategy customization
+
+#### Error Recovery
+- No fallback systems
+- No handling for partial success
+- No persistence of failed states
+
+### 3. Testing Coverage
+
+#### Component Testing
+- Existing unit tests only
+- Lacking:
+  - Integration and end-to-end test coverage
+  - Performance and load testing
+
+#### Error Scenarios
+- Uncovered cases:
+  - Network failures and timeouts
+  - Rate limit breaches
+  - Memory overflow handling
+
+### 4. Security Concerns
+
+#### API Key Management
+- Stored in environment variables
+- Risks:
+  - Accidental exposure in logs
+  - No key rotation strategy
+  - No encryption at rest
+
+#### Input Validation
+- Only basic validation in `validateEndpointData`
+- Vulnerable to:
+  - SQL Injection
+  - XSS attacks
+  - Lack of proper input sanitization
+
+#### Rate Limiting
+- Basic per-instance limitation
+- Lacks:
+  - IP/user-based limits
+  - DDoS mitigation
+
+### 5. Scalability Issues
+
+#### Horizontal Scaling
+- Deployed as a single instance
+- Missing:
+  - Load balancing
+  - Service discovery
+  - Shared state management
+
+#### Memory Optimization
+- Current issues:
+  - No memory caps or usage monitoring
+  - No GC tuning
+  - No leak detection
+
+#### Load Balancing
+- Gaps:
+  - No health checks
+  - No autoscaling support
+  - No traffic routing strategy
+
 
 ## Future Enhancements
 
@@ -145,14 +234,8 @@ Simplifies deployment and scaling across environments.
    - AI model optimization
    - Real-time analytics
 
-## Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
 
 ## License
 
-MIT License - See LICENSE for details 
+MIT License - See LICENSE for details
+
