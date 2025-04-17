@@ -4,7 +4,8 @@ A scalable solution for processing, validating, and transforming form data with 
 
 ## Architecture Overview
 
-![a65bdbb9-aa37-4944-a3b4-dd1e56cc02c2](https://github.com/user-attachments/assets/78c095f3-8038-4d6d-8d44-4f915ddcac3c)
+![image](https://github.com/user-attachments/assets/dfeb3d08-f0c2-4d23-b790-9cf33cf626ad)
+
 
 
 ## Implementation Rationale
